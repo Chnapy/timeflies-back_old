@@ -1,12 +1,11 @@
 import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
 
 @Entity()
-export class User {
+export class Character {
 
     @PrimaryGeneratedColumn('uuid')
-    readonly user_id!: string;
+    readonly character_id!: string;
 
     @Column()
-    username!: string;
-
+    name!: string;
 }
