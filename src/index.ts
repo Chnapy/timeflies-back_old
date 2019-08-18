@@ -1,19 +1,9 @@
 import 'reflect-metadata';
-import http from "http";
-import express from "express";
-import cors from 'cors';
-import bodyParser from 'body-parser';
-import {monitor} from "@colyseus/monitor";
-import passport from "passport";
-import {Strategy as LocalStrategy} from 'passport-local';
-import {MyRoom} from "./MyRoom";
-import {createConnection} from "typeorm";
-import {AuthenticationController} from "./controllers/authentication/AuthenticationController";
 import {Server} from "./Server";
 
-createConnection().then(connection => {
-    console.log('DB connection success !');
-});
+// createConnection().then(connection => {
+//     console.log('DB connection success !');
+// });
 
 // const server = http.createServer(app);
 // const gameServer = new Server({server});
@@ -29,4 +19,5 @@ createConnection().then(connection => {
 // console.log(`Listening on ws://localhost:${port}`);
 
 const server = new Server();
-server.start();
+server.start()
+    .catch((er) => console.error(er));

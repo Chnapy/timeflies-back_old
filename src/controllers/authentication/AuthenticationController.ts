@@ -1,9 +1,9 @@
 import {BodyParams, Controller, Next, Post, Request, Required, Response} from "ts-express-decorators";
 import Express from 'express';
 import Passport from 'passport';
-import PassportLocalService from "../../services/PassportLocalService";
+import {PassportLocalService} from "../../services/PassportLocalService";
 
-@Controller('/authenticate')
+@Controller('/auth')
 export class AuthenticationController {
 
     constructor(
@@ -12,7 +12,7 @@ export class AuthenticationController {
         passportLocalService.initLocalLogin();
     }
 
-    @Post('')
+    @Post('/')
     authenticate(
         @Request() req: Express.Request,
         @Response() res: Express.Response,

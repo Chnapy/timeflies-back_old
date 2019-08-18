@@ -1,11 +1,15 @@
-import {Service} from "ts-express-decorators";
 import Passport from 'passport';
 import {Strategy} from "passport-local";
+import {User} from "../entity/User";
+import {UserService} from "./UserService";
+import { Service } from 'ts-express-decorators';
 
 @Service()
-export default class PassportLocalService {
+export class PassportLocalService {
 
-    constructor(){
+    constructor(
+        private usersService: UserService
+    ){
 
         // used to serialize the user for the session
         Passport.serializeUser(PassportLocalService.serialize);
@@ -27,9 +31,8 @@ export default class PassportLocalService {
      * @param user
      * @param done
      */
-    static serialize(user: any, done: any){
-        // done(null, user._id);
-        done(null, 9);
+    static serialize(user: User, done: any){
+        done(null, user.user_id);
     }
 
     /**
@@ -37,9 +40,8 @@ export default class PassportLocalService {
      * @param id
      * @param done
      */
-    public deserialize(id: any, done: any) {
-        // done(null, this.usersService.find(id));
-        done(null, {toto: 9});
+    public deserialize(user_id: User['user_id'], done: any) {
+        done(null, this.usersService.find(user_id));
     };
 
     // =========================================================================

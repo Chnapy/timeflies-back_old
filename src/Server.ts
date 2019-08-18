@@ -1,39 +1,50 @@
-import {ServerLoader, ServerSettings, Inject, GlobalAcceptMimesMiddleware} from "ts-express-decorators";
+import {ServerLoader, ServerSettings, GlobalAcceptMimesMiddleware} from "@tsed/common";
+import '@tsed/typeorm';
 import Path from "path";
-import http from "http";
-import express from "express";
+import methodOverride from 'method-override';
 import cors from 'cors';
 import bodyParser from 'body-parser';
-import {monitor} from "@colyseus/monitor";
-import passport from "passport";
-import {Strategy as LocalStrategy} from 'passport-local';
-import {MyRoom} from "./MyRoom";
-import {createConnection} from "typeorm";
-import PassportLocalService from "./services/PassportLocalService";
+// import {monitor} from "@colyseus/monitor";
+// import {MyRoom} from "./MyRoom";
+import {PassportLocalService} from "./services/PassportLocalService";
 
+const ormconfig_dev = require('../ormconfig-dev.json');
 const rootDir = Path.resolve(__dirname);
 
 @ServerSettings({
+    debug: true,
     httpPort: Number(process.env.PORT || 2567),
+    httpsPort: false,
     rootDir,
     mount: {
-        '/': `${rootDir}/controllers/**/**.ts`
+        '/rest': `${rootDir}/controllers/**/**.ts`
     },
-    acceptMimes: ["application/json"]
+    componentsScan: [
+        `${rootDir}/middlewares/**/**.ts`,
+        `${rootDir}/services/**/**.ts`,
+    ],
+    acceptMimes: ["application/json"],
+    typeorm: [
+        ormconfig_dev
+    ]
 })
 export class Server extends ServerLoader {
 
-    /**
-     * This method let you configure the middleware required by your application to works.
-     * @returns {Server}
-     */
-    @Inject()
+
     $onMountingMiddlewares(): void | Promise<any> {
 
+        // FIXME service is not injected if given in the constructor !
         const passportService: PassportLocalService = this.injector.get<PassportLocalService>(PassportLocalService)!;
+
+        // We can see PassportLocalService and TypeORMService
+        console.log(
+            'All injectable:',
+            this.injector.toArray().map(c => c.constructor.name)
+        );
 
         this
             .use(GlobalAcceptMimesMiddleware)
+            .use(methodOverride())
             .use(bodyParser.json())
             .use(bodyParser.urlencoded({
                 extended: true
