@@ -8,8 +8,18 @@ import bodyParser from 'body-parser';
 // import {MyRoom} from "./MyRoom";
 import {PassportLocalService} from "./services/PassportLocalService";
 
-const ormconfig_dev = require('../ormconfig-dev.json');
 const rootDir = Path.resolve(__dirname);
+
+const ormconfig = (() => {
+    switch (process.env.NODE_ENV) {
+        case 'development':
+            return require('../ormconfig-dev.json');
+        default:
+            throw new Error('Unknown NODE_ENV => ' + process.env.NODE_ENV || 'undefined');
+    }
+})();
+
+export const ORMCONFIG_NAME: string = ormconfig.name;
 
 @ServerSettings({
     debug: true,
@@ -25,7 +35,7 @@ const rootDir = Path.resolve(__dirname);
     ],
     acceptMimes: ["application/json"],
     typeorm: [
-        ormconfig_dev
+        ormconfig
     ]
 })
 export class Server extends ServerLoader {

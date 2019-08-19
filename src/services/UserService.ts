@@ -1,19 +1,19 @@
 import {Connection} from "typeorm";
 import {TypeORMService} from "@tsed/typeorm";
 import {User} from "../entity/User";
-import {AfterRoutesInit, Service} from "ts-express-decorators";
+import {Service} from "@tsed/di";
+import {AfterRoutesInit} from "@tsed/common";
+import {ORMCONFIG_NAME} from "../Server";
 
 @Service()
 export class UserService implements AfterRoutesInit {
     private connection!: Connection;
 
-    // FIXME service is not injected !
     constructor(private typeORMService: TypeORMService) {
     }
 
     $afterRoutesInit() {
-        this.connection = this.typeORMService.get()!;
-        console.log("US this.connection =>", this.connection);
+        this.connection = this.typeORMService.get(ORMCONFIG_NAME)!;
     }
 
     async create(user: User): Promise<User> {

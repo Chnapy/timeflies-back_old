@@ -1,4 +1,4 @@
-import {Controller, Get, RouteService} from "ts-express-decorators";
+import {Controller, RouteService, Get} from "@tsed/common";
 
 @Controller("/rest")
 export class RestController {

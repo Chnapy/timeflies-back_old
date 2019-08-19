@@ -2,7 +2,7 @@ import Passport from 'passport';
 import {Strategy} from "passport-local";
 import {User} from "../entity/User";
 import {UserService} from "./UserService";
-import { Service } from 'ts-express-decorators';
+import {Service} from "@tsed/di";
 
 @Service()
 export class PassportLocalService {
