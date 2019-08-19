@@ -5,10 +5,11 @@
   "description": "Timeflies - Back",
   "main": "lib/index.js",
   "scripts": {
-    "clean": "rimraf '{src,test}/**/*.{js,js.map}'",
-    "start": "ts-node src/index.ts",
+    "start": "cross-env NODE_ENV=development ts-node ./src/index.ts",
+    "start:watch": "cross-env NODE_ENV=development tsnd ./src/index.ts --respawn --no-notify",
     "loadtest": "colyseus-loadtest loadtest/example.ts --room my_room --numClients 2",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "cross-env NODE_ENV=production webpack --config webpack.config.prod.js"
   },
   "author": "Richard Haddad",
   "license": "UNLICENSED",
@@ -24,11 +25,21 @@
     "@types/node": "12.7.2",
     "@types/passport": "1.0.0",
     "@types/passport-local": "1.0.33",
+    "clean-webpack-plugin": "3.0.0",
+    "cross-env": "5.2.0",
+    "ts-loader": "6.0.4",
     "ts-node": "8.3.0",
-    "typescript": "3.5.3"
+    "ts-node-dev": "1.0.0-pre.41",
+    "typescript": "3.5.3",
+    "webpack": "4.39.2",
+    "webpack-cli": "3.3.7",
+    "webpack-node-externals": "1.7.2"
   },
   "dependencies": {
     "@colyseus/monitor": "0.10.0",
+    "@tsed/common": "5.25.1",
+    "@tsed/core": "5.25.1",
+    "@tsed/di": "5.25.1",
     "@tsed/typeorm": "5.25.1",
     "body-parser": "1.19.0",
     "colyseus": "0.10.9",
@@ -39,8 +50,6 @@
     "passport-local": "1.0.0",
     "pg": "7.12.1",
     "reflect-metadata": "0.1.13",
-    "rimraf": "3.0.0",
-    "ts-express-decorators": "5.25.1",
     "typeorm": "0.2.18"
   },
   "engines": {
