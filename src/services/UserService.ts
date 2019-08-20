@@ -3,7 +3,7 @@ import {TypeORMService} from "@tsed/typeorm";
 import {User} from "../entity/User";
 import {Service} from "@tsed/di";
 import {AfterRoutesInit} from "@tsed/common";
-import {ORMCONFIG_NAME} from "../Server";
+import {ORMCONFIG_NAME} from "../TypeORMSetup";
 
 @Service()
 export class UserService implements AfterRoutesInit {
@@ -35,5 +35,14 @@ export class UserService implements AfterRoutesInit {
         console.log("Loaded users: ", users);
 
         return users;
+    }
+
+    async findByCredential(username: string, password: string): Promise<User> {
+
+        return this.connection.manager.findOneOrFail(User, {
+            where: {
+                username
+            }
+        });
     }
 }

@@ -2,14 +2,17 @@ import Passport from 'passport';
 import {Strategy} from "passport-local";
 import {User} from "../entity/User";
 import {UserService} from "./UserService";
-import {Service} from "@tsed/di";
+import {Inject, Service} from "@tsed/di";
+import {DoneFn} from '../types/PassportTypes';
+import {AfterRoutesInit, BeforeRoutesInit, ServerSettingsService, ExpressApplication} from "@tsed/common";
+import {NotFound} from "ts-httpexceptions";
 
 @Service()
-export class PassportLocalService {
+export class PassportLocalService implements BeforeRoutesInit, AfterRoutesInit {
 
-    constructor(
-        private usersService: UserService
-    ){
+    constructor(private usersService: UserService,
+                private serverSettings: ServerSettingsService,
+                @Inject(ExpressApplication) private  expressApplication: ExpressApplication) {
 
         // used to serialize the user for the session
         Passport.serializeUser(PassportLocalService.serialize);
@@ -18,29 +21,23 @@ export class PassportLocalService {
         Passport.deserializeUser(this.deserialize.bind(this));
     }
 
-    middlewareInitialize() {
-        return Passport.initialize();
+    $beforeRoutesInit() {
+        const options = this.serverSettings.get("passport") || {} as any;
+        const {userProperty, pauseStream} = options;
+
+        this.expressApplication.use(Passport.initialize({userProperty}));
+        this.expressApplication.use(Passport.session({pauseStream}));
     }
 
-    middlewareSession() {
-        return Passport.session();
+    $afterRoutesInit() {
+        this.initializeLogin();
     }
 
-    /**
-     *
-     * @param user
-     * @param done
-     */
-    static serialize(user: User, done: any){
+    static serialize(user: User, done: DoneFn<User['user_id']>) {
         done(null, user.user_id);
     }
 
-    /**
-     *
-     * @param id
-     * @param done
-     */
-    public deserialize(user_id: User['user_id'], done: any) {
+    public deserialize(user_id: User['user_id'], done: DoneFn<Promise<User>>) {
         done(null, this.usersService.find(user_id));
     };
 
@@ -50,30 +47,30 @@ export class PassportLocalService {
     // we are using named strategies since we have one for login and one for signup
     // by default, if there was no name, it would just be called 'local'
 
-    public initLocalLogin(){
-
-        Passport.use('login', new Strategy({
+    public initializeLogin() {
+        Passport.use("login", new Strategy({
             // by default, local strategy uses username and password
-            usernameField:     'username',
-            passwordField:     'password',
+            usernameField: "username",
+            passwordField: "password",
             passReqToCallback: true // allows us to pass back the entire request to the callback
-        }, this.onLocalLogin));
-
+        }, (req, email, password, done) => {
+            this.login(email, password)
+                .then((user) => done(null, user))
+                .catch((err) => done(err));
+        }));
     }
 
-    private onLocalLogin = (req: Express.Request, username: string, password: string, done: any) => {
+    private async login(username: string, password: string) {
         //$log.debug('LocalLogin', login, password);
 
-        // const user = this.usersService.findByCredential(username, password);
-        const user = {toto: 9};
+        const user = await this.usersService.findByCredential(username, password);
 
         if (!user) {
-            return done(null, false); // req.flash is the way to set flashdata using connect-flash
+            throw new NotFound('User not found');
         }
 
 
         // all is well, return successful user
-        return done(null, user);
-
+        return user;
     };
 }

@@ -1,4 +1,4 @@
-import {ServerLoader, ServerSettings, GlobalAcceptMimesMiddleware} from "@tsed/common";
+import {GlobalAcceptMimesMiddleware, ServerLoader, ServerSettings} from "@tsed/common";
 import '@tsed/typeorm';
 import Path from "path";
 import methodOverride from 'method-override';
@@ -6,20 +6,10 @@ import cors from 'cors';
 import bodyParser from 'body-parser';
 // import {monitor} from "@colyseus/monitor";
 // import {MyRoom} from "./MyRoom";
-import {PassportLocalService} from "./services/PassportLocalService";
+import {ORMCONFIG} from "./TypeORMSetup";
+import session from "express-session";
 
 const rootDir = Path.resolve(__dirname);
-
-const ormconfig = (() => {
-    switch (process.env.NODE_ENV) {
-        case 'development':
-            return require('../ormconfig-dev.json');
-        default:
-            throw new Error('Unknown NODE_ENV => ' + process.env.NODE_ENV || 'undefined');
-    }
-})();
-
-export const ORMCONFIG_NAME: string = ormconfig.name;
 
 @ServerSettings({
     debug: true,
@@ -35,22 +25,12 @@ export const ORMCONFIG_NAME: string = ormconfig.name;
     ],
     acceptMimes: ["application/json"],
     typeorm: [
-        ormconfig
+        ORMCONFIG
     ]
 })
 export class Server extends ServerLoader {
 
-
     $onMountingMiddlewares(): void | Promise<any> {
-
-        // FIXME service is not injected if given in the constructor !
-        const passportService: PassportLocalService = this.injector.get<PassportLocalService>(PassportLocalService)!;
-
-        // We can see PassportLocalService and TypeORMService
-        console.log(
-            'All injectable:',
-            this.injector.toArray().map(c => c.constructor.name)
-        );
 
         this
             .use(GlobalAcceptMimesMiddleware)
@@ -59,11 +39,17 @@ export class Server extends ServerLoader {
             .use(bodyParser.urlencoded({
                 extended: true
             }))
-            .use(cors())
-
-            // Configure passport JS
-            .use(passportService.middlewareInitialize())
-            .use(passportService.middlewareSession());
+            .use(session({
+                secret: "mysecretkey",
+                resave: true,
+                saveUninitialized: true,
+                cookie: {
+                    path: "/",
+                    httpOnly: true,
+                    secure: false
+                }
+            }))
+            .use(cors());
 
 
     }

@@ -6,18 +6,22 @@
       "dom"
     ],
     "typeRoots": [
-      "./node_modules/@types"
+      "./node_modules/@types",
+      "src/types"
     ],
     "outDir": "./dist",
-    "types": ["reflect-metadata"],
+    "types": [
+      "reflect-metadata"
+    ],
     "module": "commonjs",
     "moduleResolution": "node",
-    "experimentalDecorators":true,
+    "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "sourceMap": true,
     "declaration": false,
     "strict": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "resolveJsonModule": true
   },
   "include": [
     "src"
